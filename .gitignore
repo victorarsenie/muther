@@ -1,0 +1,17 @@
+# Personal content is never tracked: this repo is code, schemas and examples.
+# The live notes and memory stay on the machine that owns them.
+knowledge/
+memory/
+*.local.md
+
+# Runtime
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
