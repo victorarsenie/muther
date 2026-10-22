@@ -1,9 +1,5 @@
-# Personal content is never tracked: this repo is code, schemas and examples.
-# The live notes and memory stay on the machine that owns them.
-# Anchored with "/" so examples/knowledge and examples/memory stay tracked.
-/knowledge/
-/memory/
-*.local.md
+# This repository holds the assistant layer only. Memory and knowledge live in
+# victorarsenie/ai-unlimited-memory and are never duplicated here.
 
 # Runtime
 __pycache__/
