@@ -1,7 +1,8 @@
 # Personal content is never tracked: this repo is code, schemas and examples.
 # The live notes and memory stay on the machine that owns them.
-knowledge/
-memory/
+# Anchored with "/" so examples/knowledge and examples/memory stay tracked.
+/knowledge/
+/memory/
 *.local.md
 
 # Runtime
