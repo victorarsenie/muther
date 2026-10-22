@@ -47,6 +47,15 @@ A skill belongs here when it describes *how Jarvis behaves or speaks* (voice
 turn-taking, spoken confirmation, interruption handling) rather than what it
 knows. `skills/` is reserved for those.
 
+## Planned identity: Muther
+
+The repository is still `jarvis`, but the assistant is heading for a name and an
+interface of its own: **Muther** (from MU/TH/UR 6000), with an amber terminal
+surface, a live status rail (memory / voice / model), a short boot sequence,
+synthesized cues and a calm, low-affect voice. Design only for now — the memory
+layer ships first. Details, prior art and the rename checklist:
+[`docs/MUTHER.md`](docs/MUTHER.md).
+
 ## Current state
 
 Voice runs on Hermes because it already ships the three expensive parts: a wake
