@@ -99,6 +99,34 @@ Target: calm, low-affect, slightly synthetic, en-GB, slower than conversational
 - Wake word: "hey muther" (two syllables, low false-accept risk). Test in a room
   with a TV before enabling by default.
 
+## What to borrow from the existing builds
+
+From `krko2n/Muthur-os-terminal` (Tauri + React + Ollama):
+
+- **Boot diagnostics as content, not animation:** the first screen lists what the
+  system actually found (memory, knowledge, voice, model), then clears. Ours can
+  print real counts and the map budget.
+- **Status header with named fields:** platform, backend, AI model, status,
+  resource cost. Translates directly to HARNESS / MODEL / CTX / MEMORY / VOICE.
+- **AI panel docked to the side:** chat with an explicit stop control, suggestions
+  shown for review only, warnings on destructive commands. Our approval strip is
+  the same idea with fewer pixels.
+- **Performance budget:** their claim is ~18 MB binary, <10% idle CPU, ~150 MB RAM.
+  Ours should hold <150 MB and <5% idle with the terminal idle.
+- **Installer flags:** `--dry-run`, `--no-deps`, `--prefix`. Our installers should
+  support at least `-WhatIf` before they write into a harness.
+- **Safe defaults with explicit overrides:** they block private-network fetches
+  and broad filesystem browsing unless env flags are set. Our UI should be
+  read-only by default and ask before shell actions.
+
+From `edex-ui`: telemetry panels and a file browser are the recognisable parts;
+they also age badly when the data is fake. Take live telemetry only where we have
+real numbers (map size, note count, model, VRAM), and skip decorative graphs.
+
+Skip: kiosk mode as the whole desktop (it traps the user), the 3D globe, the
+built-in browser, ASCII image rendering. They are impressive and irrelevant to an
+assistant that answers in text and speech.
+
 ## Prior art (checked 2026-10-22)
 
 - `krko2n/Muthur-os-terminal` - Tauri v2 + React 19 + Ollama, cinematic terminal.
