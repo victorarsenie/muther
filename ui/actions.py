@@ -35,6 +35,7 @@ ENGINES = {
 }
 
 CREATE_NEW_CONSOLE = 0x00000010
+NO_WINDOW = 0x08000000
 
 
 def port_open(port: int = 8080, host: str = "127.0.0.1") -> bool:
@@ -64,7 +65,8 @@ def alive(pid: int) -> bool:
     if not pid:
         return False
     out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH"],
-                         capture_output=True, text=True).stdout
+                         capture_output=True, text=True,
+                         creationflags=NO_WINDOW).stdout
     return str(pid) in out
 
 
@@ -97,7 +99,7 @@ def stop(key: str) -> tuple[bool, str]:
     pid = record.get("pid")
     if pid and alive(pid):
         subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, creationflags=NO_WINDOW)
         state.pop(key, None)
         save(state)
         return True, f"stopped {record['name']} (pid {pid})"

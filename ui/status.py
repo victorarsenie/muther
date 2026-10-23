@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import ctypes
 import json
+import os
 import socket
 import subprocess
 import sys
@@ -27,8 +28,12 @@ PORTS = {8080: "model server", 8090: "embedder", 3000: "portfolio dev"}
 
 
 def _run(cmd: list[str], timeout: float = 4.0) -> str:
+    # CREATE_NO_WINDOW: without it every child of a windowless process gets its
+    # own console, so a 2 s poll flashes a cmd window on the desktop.
+    flags = 0x08000000 if os.name == "nt" else 0
     try:
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout,
+                             creationflags=flags)
         return res.stdout.strip()
     except Exception:
         return ""

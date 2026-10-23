@@ -9,11 +9,13 @@ differs. Keys: 1/2/3 start or arm-stop, s stops all, r refreshes, q quits.
 """
 from __future__ import annotations
 
+import os
 import sys
 import threading
 import time
 import tkinter as tk
 from datetime import datetime
+from pathlib import Path
 
 import actions
 import status as collector
@@ -300,6 +302,27 @@ def dark_title(root: tk.Tk) -> None:
         pass
 
 
+def report_failure(exc: BaseException) -> None:
+    """Never die silently: log the traceback and show it when there is no console."""
+    import traceback
+    text = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+    log = Path(__file__).with_name("board-error.log")
+    try:
+        log.write_text(f"{datetime.now().isoformat(timespec='seconds')}\n{text}",
+                       encoding="utf-8")
+    except OSError:
+        pass
+    print(text, file=sys.stderr)
+    if os.environ.get("MUTHER_NO_DIALOG") == "1":
+        return
+    try:
+        import ctypes
+        ctypes.windll.user32.MessageBoxW(
+            None, f"{text[-1200:]}\n\nlog: {log}", "Muther failed to start", 0x10)
+    except Exception:
+        pass
+
+
 def main() -> int:
     if "--once" in sys.argv:
         d = collector.collect()
@@ -307,9 +330,13 @@ def main() -> int:
               f"notes {d['memory']['notes']}, alerts {len(d['alerts'])}")
         return 0
     root = tk.Tk()
-    Board(root)
-    dark_title(root)
-    root.mainloop()
+    try:
+        Board(root)
+        dark_title(root)
+        root.mainloop()
+    except Exception as exc:  # a crash must be readable, not a closed window
+        report_failure(exc)
+        return 1
     return 0
 
 
