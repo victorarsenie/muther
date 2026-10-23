@@ -12,12 +12,15 @@ from __future__ import annotations
 
 import ctypes
 import re
+import subprocess
 import sys
 import threading
 import time
 from datetime import datetime
+from pathlib import Path
 
 import status as collector
+import actions
 
 AMBER = "\x1b[38;5;214m"
 AMBER_DIM = "\x1b[38;5;172m"
@@ -102,6 +105,11 @@ def render(data: dict) -> str:
     for proc in data["processes"]:
         engine_rows.append((f"pid {proc['pid']:<6} {proc['name']:<16} rss {proc['rss_mib']} MiB",
                             AMBER))
+    for key, rec in sorted(data.get("managed", {}).items()):
+        up = rec.get("alive")
+        engine_rows.append((f"[{key}] {rec.get('name', key):<14} "
+                            + ("up  " if up else "dead") + f" pid {rec.get('pid')}",
+                            GREEN if up else GREY))
     if not data["processes"]:
         engine_rows.append(("no engine process holding the card", GREY))
     lines += panel("ENGINES", engine_rows)
@@ -121,8 +129,29 @@ def render(data: dict) -> str:
     lines += panel("ACTIVITY", [(a, GREY) for a in activity] or [("idle", GREY)])
 
     lines.append(f"{AMBER_DIM}{'=' * WIDTH}{RESET}")
-    lines.append(f"{AMBER_DIM} q quit   r refresh   collected {data['ts'][11:19]}{RESET}")
+    note = LAST.get("msg")
+    if note and time.time() - LAST.get("at", 0) < 6:
+        lines.append(f"{AMBER}{fit(note, WIDTH)}{RESET}")
+    lines.append(f"{AMBER_DIM} 1/2/3 start-stop   s stop all   w window   q quit   "
+                 f"r refresh   {data['ts'][11:19]}{RESET}")
     return "\n".join(lines)
+
+
+LAST: dict = {"msg": "", "at": 0.0}
+
+
+def chime(kind: str = "boot") -> None:
+    """Machine-room cue. Short, synthesised, no sample files."""
+    def play() -> None:
+        try:
+            import winsound
+            seq = {"boot": [(196, 110), (147, 170), (98, 240)],
+                   "ok": [(440, 80)], "warn": [(220, 140), (220, 140)]}[kind]
+            for freq, ms in seq:
+                winsound.Beep(freq, ms)
+        except Exception:
+            pass
+    threading.Thread(target=play, daemon=True).start()
 
 
 def boot() -> None:
@@ -138,8 +167,11 @@ def main() -> int:
         return 0
 
     enable_vt()
+    if "--no-sound" not in sys.argv:
+        chime("boot")
     boot()
     state: dict = {"data": None, "busy": False}
+    pending: dict = {"key": None, "at": 0.0}
 
     def worker() -> None:
         try:
@@ -151,6 +183,17 @@ def main() -> int:
         if not state["busy"]:
             state["busy"] = True
             threading.Thread(target=worker, daemon=True).start()
+
+    def run_action(fn, key: str) -> None:
+        def go() -> None:
+            try:
+                ok, message = fn(key)
+            except Exception as exc:
+                ok, message = False, f"{key}: {exc}"
+            LAST.update(msg=message, at=time.time())
+            chime("ok" if ok else "warn")
+            refresh()
+        threading.Thread(target=go, daemon=True).start()
 
     refresh()
     deadline = time.time() + 8
@@ -173,6 +216,28 @@ def main() -> int:
                     break
                 if key == "r":
                     refresh()
+                elif key in actions.ENGINES:
+                    running = actions.state().get(key)
+                    if running and running.get("alive"):
+                        if pending["key"] == key and time.time() - pending["at"] < 4:
+                            run_action(actions.stop, key)
+                            pending["key"] = None
+                        else:
+                            pending.update(key=key, at=time.time())
+                            LAST.update(msg=f"press {key} again within 4s to stop "
+                                            f"{running['name']}", at=time.time())
+                    else:
+                        pending["key"] = None
+                        run_action(actions.start, key)
+                elif key == "s":
+                    for k in list(actions.state()):
+                        run_action(actions.stop, k)
+                elif key == "w":
+                    subprocess.Popen(
+                        [sys.executable, str(Path(__file__).resolve().parent / "window.py"), "--open"],
+                        creationflags=0x00000008,  # detached: it is a server, not a console
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    LAST.update(msg="window: http://127.0.0.1:8123/ (529 MB while open)", at=time.time())
             time.sleep(0.5)
     except KeyboardInterrupt:
         pass

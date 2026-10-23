@@ -92,21 +92,31 @@ def ports() -> list[dict]:
     return out
 
 
-def processes() -> list[dict]:
-    """Engine processes only: the ones that hold the card."""
-    wanted = {"llama-server.exe", "strata.exe", "strata-poly.exe"}
-    out = []
+def tasklist_rows() -> list[tuple[str, int, int]]:
+    """One tasklist call, reused for engine detection and managed-pid checks."""
+    rows = []
     for line in _run(["tasklist", "/fo", "csv", "/nh"]).splitlines():
         parts = [p.strip('"') for p in line.split('","')]
-        if len(parts) < 2 or parts[0].lower() not in wanted:
+        if len(parts) < 2 or not parts[1].isdigit():
             continue
-        rss_mib = 0
         digits = "".join(c for c in parts[-1].split()[0] if c.isdigit())
-        if digits:
-            rss_mib = round(int(digits) / 1024)
-        out.append({"name": parts[0], "pid": int(parts[1]) if parts[1].isdigit() else None,
-                    "rss_mib": rss_mib})
-    return out
+        rows.append((parts[0], int(parts[1]), round(int(digits) / 1024) if digits else 0))
+    return rows
+
+
+def engines_from(rows: list[tuple[str, int, int]]) -> list[dict]:
+    wanted = {"llama-server.exe", "strata.exe", "strata-poly.exe"}
+    return [{"name": n, "pid": p, "rss_mib": r} for n, p, r in rows if n.lower() in wanted]
+
+
+def managed_from(rows: list[tuple[str, int, int]]) -> dict:
+    """Engines the interface started, with liveness checked against the same rows."""
+    try:
+        record = json.loads((Path(__file__).resolve().parent / "engines.json").read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    pids = {p for _, p, _ in rows}
+    return {k: dict(v, alive=v.get("pid") in pids) for k, v in record.items()}
 
 
 def _tail_lines(path: Path, count: int = 5) -> list[str]:
@@ -142,6 +152,8 @@ def memory_layer() -> dict:
 
 def collect() -> dict:
     g, r = gpu(), ram()
+    rows = tasklist_rows()
+    procs = engines_from(rows)
     alerts = []
     if g.get("present") and g["free_mib"] < 1024:
         alerts.append(f"VRAM free {g['free_mib']} MiB - below the 1024 reserve")
@@ -149,12 +161,11 @@ def collect() -> dict:
         alerts.append("VRAM in the WDDM eviction zone (<300 MiB)")
     if r["available_mib"] < 2048:
         alerts.append(f"RAM available {r['available_mib']} MiB - expert spill likely")
-    if any(p["port"] == 8080 and not p["open"] for p in ports()):
-        pass  # no alert: the model being down is a normal state
     return {
         "ts": datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"),
         "gpu": g, "ram": r, "disk": disk(), "ports": ports(),
-        "processes": processes(), "memory": memory_layer(), "alerts": alerts,
+        "processes": procs, "managed": managed_from(rows),
+        "memory": memory_layer(), "alerts": alerts,
     }
 
 
