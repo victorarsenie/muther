@@ -1,8 +1,8 @@
 # Muther: identity, interface and sound (design only)
 
-Status: **planned, not built.** The memory layer comes first. Nothing in this
-document is implemented, and the repository is still named `jarvis` until the
-rename step at the end.
+Status: **planned, not built.** The memory layer came first. Nothing in this
+document is implemented beyond the persona rename, the voice configuration and the
+repository rename (`jarvis` → `muther`, 2026-10-23).
 
 ## Why rename
 
@@ -32,13 +32,13 @@ deliberate latency. The name is a reference, not a licence.
 When the assistant is running, one always-available surface shows four things:
 
 ```
-MU/TH/UR 6000 · MUTHER                                    LINK  OK
-──────────────────────────────────────────────────────────────────
-> memory   8 notes · 1.7 KB map · last write 12:41
-  voice    idle · wake "hey muther" · en-GB
-  model    local · 64k ctx
-──────────────────────────────────────────────────────────────────
-> █
+MU/TH/UR 6000 Â· MUTHER                                    LINK  OK
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+> memory   8 notes Â· 1.7 KB map Â· last write 12:41
+  voice    idle Â· wake "hey muther" Â· en-GB
+  model    local Â· 64k ctx
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+> â–ˆ
 ```
 
 - **Palette:** amber `#ffb000` for primary text, dim green `#6f8f6f` for secondary
@@ -145,9 +145,9 @@ assistant that answers in text and speech.
 1. Rename the GitHub repo; GitHub keeps redirects, so old clones keep working.
 2. Rename the local directory to match (`E:\AI\<name>`).
 3. Update: README, `install/persona.ps1` default paths, the OpenCode agent file's
-   description, wake word in Hermes config, any `JARVIS`-named variables (none
+   description, wake word in Hermes config, any `Muther`-named variables (none
    remain in the memory layer).
-4. Rename `persona/assistant.md` header from Jarvis to the new name; keep the
+4. Rename `persona/assistant.md` header from Muther to the new name; keep the
    character content.
 5. Only then start the interface work: palette and status rail first, boot
    sequence and sound second, streaming cadence last.

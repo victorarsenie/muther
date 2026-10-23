@@ -1,4 +1,4 @@
-# Installs the Jarvis persona into each harness.
+﻿# Installs the Muther persona into each harness.
 #
 # The persona is owned here (persona/assistant.md) and copied into the harness's
 # identity slot. The memory layer is not involved: it injects facts and the map.
@@ -17,7 +17,7 @@ $repo = Split-Path -Parent $PSScriptRoot
 $personaPath = Join-Path $repo 'persona\assistant.md'
 if (-not (Test-Path $personaPath)) { throw "persona not found: $personaPath" }
 $persona = ([IO.File]::ReadAllText($personaPath)).Trim()
-$marker = '<!-- managed by jarvis repo: persona/assistant.md -->'
+$marker = '<!-- managed by Muther repo: persona/assistant.md -->'
 
 function Backup($path) {
   if (Test-Path $path) {
@@ -40,7 +40,7 @@ if ($Only -in 'all', 'opencode') {
   Backup $agent
   $front = @"
 ---
-description: Jarvis — the everyday assistant for this machine. Spoken-friendly. Not the coding agent; hand software work to build.
+description: Muther â€” the everyday assistant for this machine. Spoken-friendly. Not the coding agent; hand software work to build.
 mode: primary
 permissions:
   - action: "*"
@@ -59,7 +59,7 @@ permissions:
     if ($text -match '(?s)^---\s*\r?\n.*?\r?\n---\s*\r?\n') {
       $front = $Matches[0].TrimEnd()
       $front = [regex]::Replace($front, '(?m)^description:.*$',
-        'description: Jarvis - the everyday assistant for this machine. Spoken-friendly. Not the coding agent; hand software work to build.')
+        'description: Muther - the everyday assistant for this machine. Spoken-friendly. Not the coding agent; hand software work to build.')
     }
   }
   [IO.File]::WriteAllText($agent, "$front`n`n$persona`n", (New-Object System.Text.UTF8Encoding($false)))
