@@ -6,11 +6,11 @@ nothing. Knowledge, facts and the conversation archive live in
 
 ```
 ai-unlimited-memory                Muther
-â”œâ”€â”€ knowledge/   (notes)           â”œâ”€â”€ persona/assistant.md   character + behaviour
-â”œâ”€â”€ memory/      (profile, projects)â”œâ”€â”€ install/persona.ps1    writes SOUL.md / agent file
-â”œâ”€â”€ kb.py                           â”œâ”€â”€ docs/VOICE.md         voice design, landmines
-â”œâ”€â”€ adapters/    (harness hooks)    â””â”€â”€ skills/               (none yet)
-â””â”€â”€ skills/knowledge-base
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ knowledge/   (notes)           Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ persona/assistant.md   character + behaviour
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ memory/      (profile, projects)Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ install/persona.ps1    writes SOUL.md / agent file
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ kb.py                           Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ docs/VOICE.md         voice design, landmines
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ adapters/    (harness hooks)    Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ skills/               (none yet)
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ skills/knowledge-base
 ```
 
 The split is deliberate: the assistant is the part most likely to be replaced
@@ -40,7 +40,7 @@ separately (`ai-unlimited-memory\adapters\hermes\install.ps1`) and injects
 ## Skills
 
 No skill in this repository has been written yet: the assistant's behaviour lives
-in the persona, and the one skill that exists â€” `knowledge-base` â€” describes the
+in the persona, and the one skill that exists Ã¢â‚¬â€ `knowledge-base` Ã¢â‚¬â€ describes the
 memory layer, so it is owned and installed by `ai-unlimited-memory`.
 
 A skill belongs here when it describes *how Muther behaves or speaks* (voice
@@ -52,7 +52,7 @@ knows. `skills/` is reserved for those.
 The repository is still `Muther`, but the assistant is heading for a name and an
 interface of its own: **Muther** (from MU/TH/UR 6000), with an amber terminal
 surface, a live status rail (memory / voice / model), a short boot sequence,
-synthesized cues and a calm, low-affect voice. Design only for now â€” the memory
+synthesized cues and a calm, low-affect voice. Design only for now Ã¢â‚¬â€ the memory
 layer ships first. Details, prior art and the rename checklist:
 [`docs/MUTHER.md`](docs/MUTHER.md).
 
@@ -60,10 +60,14 @@ layer ships first. Details, prior art and the rename checklist:
 
 Voice runs on Hermes because it already ships the three expensive parts: a wake
 word ("Hey Hermes", off by default, `/wake`), local faster-whisper speech-to-text
-with VAD, and text-to-speech. Everything that makes it Muther â€” character, memory,
-knowledge â€” is outside Hermes.
+with VAD, and text-to-speech. Everything that makes it Muther Ã¢â‚¬â€ character, memory,
+knowledge Ã¢â‚¬â€ is outside Hermes.
 
 `docs/VOICE.md` holds the design for a harness-independent voice loop (PTT,
 sentence-level streaming, interrupt handling), the five landmines that cost real
 debugging time in `backtalk`, what was taken from Muther 4.0 / Mark-LVI, and what
 was rejected (Gemini Live, paid Claude plans).
+
+## Interface
+
+The operations console lives in its own repository: `E:\AI\console` (`victorarsenie/console`). It reads the machine, the memory layer and the engines; Muther provides the persona and voice and can drive it.
