@@ -150,6 +150,38 @@ def memory_layer() -> dict:
     }
 
 
+def models(limit: int = 6) -> list[dict]:
+    folder = Path(r"E:\AI\models\gguf")
+    rows = []
+    for p in folder.glob("*.gguf"):
+        try:
+            rows.append({"name": p.stem, "gib": round(p.stat().st_size / 1073741824, 1)})
+        except OSError:
+            continue
+    return sorted(rows, key=lambda r: -r["gib"])[:limit]
+
+
+def recent_notes(limit: int = 5) -> list[dict]:
+    """Notes by front-matter `updated`, newest first — the same field kb.py indexes."""
+    kb = HOME / "knowledge"
+    rows = []
+    for p in kb.rglob("*.md"):
+        if p.name.lower() in ("index.md", "_domain.md") or "_archive" in p.parts:
+            continue
+        try:
+            head = p.read_text(encoding="utf-8-sig")[:400]
+        except OSError:
+            continue
+        stamp = ""
+        for line in head.splitlines():
+            if line.startswith("updated:"):
+                stamp = line.split(":", 1)[1].strip()
+                break
+        if stamp:
+            rows.append({"note": str(p.relative_to(kb)).replace("\\", "/"), "updated": stamp})
+    return sorted(rows, key=lambda r: r["updated"], reverse=True)[:limit]
+
+
 def collect() -> dict:
     g, r = gpu(), ram()
     rows = tasklist_rows()
@@ -166,6 +198,7 @@ def collect() -> dict:
         "gpu": g, "ram": r, "disk": disk(), "ports": ports(),
         "processes": procs, "managed": managed_from(rows),
         "memory": memory_layer(), "alerts": alerts,
+        "models": models(), "recent": recent_notes(),
     }
 
 

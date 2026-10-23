@@ -1,3 +1,3 @@
 @echo off
-rem Muther terminal board. Pass --no-sound to silence the boot cue.
-python "%~dp0tui.py" %*
+rem Muther board — tkinter app window, ~25 MB, no browser and no console.
+start "" pythonw "%~dp0board.py" %*

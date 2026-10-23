@@ -1,57 +1,62 @@
 # Muther interface
 
-Two surfaces over the same collector, plus engine control.
+Two faces, one collector, one set of engine guards.
 
-```
-muther.bat                 # the terminal board (default)
-python tui.py              # same, without the .bat
-python window.py --open    # the same board as a Chrome app window
-python status.py --json    # the raw document
-```
+| face | launch | RAM | when |
+|---|---|---|---|
+| **board** (default) | `muther.bat` | **25–31 MB** | always — runs fine while a model is pinned |
+| **dashboard** | `muther-web.bat` | ~550 MB (94 python + 457 WebView2) | when no model is loaded |
+| terminal board | `python tui.py` | 17 MB | inside an existing terminal |
+| Chrome app | `python window.py --open` | 529 MB | fallback if WebView2 is missing |
 
-## Keys (terminal board)
+`muther.bat` starts `board.py` with `pythonw`, so there is no console window. The
+dashboard is the same page in a WebView2 window (`app.py`), no Chrome branding,
+no tabs, no address bar.
+
+## Keys (board and dashboard)
 
 | key | action |
 |---|---|
-| `1` `2` `3` | start that engine, or arm a stop for it (press again within 4 s) |
-| `s` | stop every engine this board started |
-| `w` | open the window server on :8123 and launch Chrome at it |
-| `r` | refresh now |
-| `q` | quit |
+| `1` `2` `3` | start that engine, or arm its stop (press again within 4 s) |
+| `s` | stop every engine the board started |
+| `r` | refresh |
+| `q` | quit (board) |
 
-Engines: `1` swift 120k, `2` coder strata, `3` swift 64k agent. The registry and
-the guards live in `actions.py` — edit there to change what the keys mean.
+Engines: `1` swift 120k, `2` coder strata, `3` swift 64k. Registry in `actions.py`.
 
-## Guards (the point of `actions.py`)
+## Guards (why `actions.py` exists)
 
 - Refuses to start while **:8080 is occupied** — one arm at a time, or the next
   process silently talks to a stale model.
-- Refuses to start a second engine while one it started is alive.
-- Stops only processes it started (pid recorded in `engines.json`), with
-  `taskkill /T`, because the launcher is a `.bat` that spawns the server.
-- `s` and the second press on a key are the only ways to stop: nothing stops a
-  model because a window closed.
+- Refuses a second start while an engine it manages is alive.
+- Stops only pids it recorded (`engines.json`), killing the `.bat` tree.
+- Nothing stops a model because a window closed.
 
-## Measured cost
+## Files
 
-| surface | RAM | VRAM |
-|---|---|---|
-| terminal board | 17 MB | 0 |
-| Chrome app window | 529 MB | ~3 MB |
+| file | role |
+|---|---|
+| `status.py` | collector: GPU, RAM, disk, ports, engine processes, knowledge counts, models on disk, recent notes |
+| `actions.py` | engine registry, start/stop with guards |
+| `board.py` | tkinter app window (default face) |
+| `app.py` | WebView2 window hosting the dashboard |
+| `window.py` | dashboard server + `/api/state`, `/api/engine`; Chrome fallback |
+| `web/` | the dashboard: `index.html`, `app.css`, `app.js` |
+| `tui.py` | terminal board |
 
-The board is the default because at 150k the coder leaves ~1–2 GiB free, and expert
-spill costs measured disk reads (342 GB at 200k, 11 GB at 150k). Open the window
-when no model is loaded; close it before a benchmark.
+## Verified
 
-## What is verified
+- Collector + dashboard API: `/api/state` returns live values; `/api/engine` returns
+  refusals correctly (`stop` with nothing recorded, unknown key).
+- Port guard: with a dummy listener on :8080, a start refuses and exits 1.
+- Dashboard visual check: headless screenshot, panels and values correct, grid
+  spans fixed.
+- Board: window opens, renders the amber panels, 30.9 MB RSS; layout confirmed by
+  screen capture.
+- WebView2 app: window opens, API served from inside it, 94 + 457 MB.
 
-- Collector reads GPU, RAM, disk, ports, engine processes, knowledge counts and
-  the last injection line; `--json` and `--once` both render.
-- Port guard: with a dummy listener on :8080, `--start 1` refuses and exits 1.
-- Window server: `GET /` returns 200 with live values; `<meta refresh>` drives it.
-- Boot chime uses `winsound.Beep` (synthesised, no sample files).
+## Not verified
 
-## What is not verified
-
-No engine has been started by this board yet: that is a model run, and model runs
-are explicit work. Pressing `1` is the test, when you want it.
+No engine has been started by the interface: that is a model run, and model runs
+are explicit work. The last two board tweaks (models/recent panels, dark title bar)
+were not re-captured; they render from the same data path and raise no error.
